@@ -2,29 +2,29 @@ package ru.hoiboi.gfdocsbot.individual.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
+import ru.hoiboi.gfdocsbot.TelegramDocsBot;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
 public class IndividualDockService {
 
-    public static void startService(String fileName, Individual individual) {
+    public static void startService(String fileName, Individual individual, long chatId) {
         try {
             XWPFDocument document = openDocument(".\\src/main/resources/pattern/" + fileName + ".docx");
-            log.info("Договор {} успешно открыт.", fileName + ".docx");
-            changeDocument(document, individual);
+            changeDocument(document, individual, chatId);
+            log.info("Договор {} успешно создан и отправлен!", document);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 
-    private static void changeDocument(XWPFDocument document, Individual individual) throws IOException {
+    private static void changeDocument(XWPFDocument document, Individual individual, long chatId) throws IOException {
         for (XWPFParagraph p : document.getParagraphs()) {
             List<XWPFRun> runs = p.getRuns();
             if (runs != null) {
@@ -125,10 +125,15 @@ public class IndividualDockService {
                 }
             }
         }
-        document.write(new FileOutputStream(".\\src/main/resources/document/" + individual.getInn()
-                + "_" + LocalDate.now()
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + ".docx"));
+        String fileName = individual.getInn()
+                + "_" + LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy_hh.mm")) + ".docx";
+//                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy_hh.mm")) + ".docx";
+        document.write(new FileOutputStream(".\\src/main/resources/document/" + fileName));
         document.close();
+
+        TelegramDocsBot telegramDocsBot = new TelegramDocsBot();
+        telegramDocsBot.sendDocument(chatId, fileName);
     }
 
     private static String convertToShortName(String fullName) {
@@ -149,7 +154,10 @@ public class IndividualDockService {
     }
 
     private static XWPFDocument openDocument(String filename) throws Exception {
-        FileInputStream inputStream = new FileInputStream(filename);
+        InputStream inputStream = new FileInputStream(filename);
+        if (inputStream == null) {
+            throw new FileNotFoundException("Файла не существует: " + filename);
+        }
         XWPFDocument document = new XWPFDocument(inputStream);
         inputStream.close();
         return document;

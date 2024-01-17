@@ -4,7 +4,9 @@ import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -19,12 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class Bot extends TelegramLongPollingBot {
+public class TelegramDocsBot extends TelegramLongPollingBot {
 
     private String company = "";
     private boolean isState = false;
     private final List<Long> users = new ArrayList<>();
-    private final List<Individual> individuals = new ArrayList<>();
 
     @Override
     public String getBotUsername() {
@@ -62,8 +63,8 @@ public class Bot extends TelegramLongPollingBot {
                                 Individual individual;
                                 individual = createIndividualFromString(update.getMessage().getText());
                                 if (areAllFieldsFilled(individual)) {
-                                    individuals.add(individual);
-                                    IndividualDockService.startService(company, individual);
+                                    IndividualDockService.startService(company, individual,
+                                            update.getMessage().getChatId());
                                     setAnswer(update.getMessage().getChatId(), "Файл успешно сохранён!");
                                     isState = false;
                                 }
@@ -84,6 +85,19 @@ public class Bot extends TelegramLongPollingBot {
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    public void sendDocument(long chatId, String fileName) {
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setChatId(chatId);
+        sendDocument.setDocument(new InputFile(".\\src/resources/document/" + fileName));
+        sendDocument.setCaption(fileName);
+        sendDocument.getFile();
+        try {
+            execute(sendDocument);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -113,7 +127,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void listenDataForIndividual(long chatId) throws TelegramApiException {
+    private void listenDataForIndividual(long chatId) {
         setAnswer(chatId, "*Ниже необходимо заполнить данные подписуемого строго по порядку:*" +
                 "\nНаименование ИП" +
                 "\nЮр. адрес" +
@@ -154,19 +168,6 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void mainMenu(Long chatId, String firstName) throws TelegramApiException {
-
-//        ReplyKeyboardMarkup replyKeyboard = new ReplyKeyboardMarkup();
-//
-//        replyKeyboard.setResizeKeyboard(true);
-//        replyKeyboard.setOneTimeKeyboard(true);
-//        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-//        KeyboardRow keyboardRow = new KeyboardRow();
-//        keyboardRows.add(keyboardRow);
-//        keyboardRow.add(new KeyboardButton("О приложении " + EmojiParser
-//                .parseToUnicode(Emojis.INFORMATION_SOURCE_EMOJI)));
-//        keyboardRow.add(new KeyboardButton("Создать документ " + EmojiParser
-//                .parseToUnicode(Emojis.PAGE_FACING_UP_EMOJI)));
-//        replyKeyboard.setKeyboard(keyboardRows);
 
         InlineKeyboardMarkup keyboard;
 

@@ -10,7 +10,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 public class GfDocsBotApplication {
 	public static void main(String[] args) throws TelegramApiException {
 		TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-		botsApi.registerBot(new Bot());
+		botsApi.registerBot(new TelegramDocsBot());
 		SpringApplication.run(GfDocsBotApplication.class, args);
 	}
 }
