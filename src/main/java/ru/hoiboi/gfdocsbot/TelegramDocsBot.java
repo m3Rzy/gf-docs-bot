@@ -4,8 +4,8 @@ import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -14,16 +14,21 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.hoiboi.gfdocsbot.constant.CompanyEnum;
 import ru.hoiboi.gfdocsbot.constant.Emojis;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
-import ru.hoiboi.gfdocsbot.individual.service.IndividualDockService;
 import org.apache.commons.lang3.ObjectUtils;
+import ru.hoiboi.gfdocsbot.individual.service.IndividualDockService;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.hoiboi.gfdocsbot.constant.Emojis.*;
 
 @Slf4j
 public class TelegramDocsBot extends TelegramLongPollingBot {
 
     private String company = "";
+    private String titleOfCompany = "";
     private boolean isState = false;
     private final List<Long> users = new ArrayList<>();
 
@@ -64,8 +69,7 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                                 individual = createIndividualFromString(update.getMessage().getText());
                                 if (areAllFieldsFilled(individual)) {
                                     IndividualDockService.startService(company, individual,
-                                            update.getMessage().getChatId());
-                                    setAnswer(update.getMessage().getChatId(), "Файл успешно сохранён!");
+                                            update.getMessage().getChatId(), this, titleOfCompany);
                                     isState = false;
                                 }
                             } catch (ArrayIndexOutOfBoundsException e) {
@@ -88,16 +92,20 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendDocument(long chatId, String fileName) {
+    public void sendDocument(long chatId, String fileName, InputStream inputStream) {
         SendDocument sendDocument = new SendDocument();
         sendDocument.setChatId(chatId);
-        sendDocument.setDocument(new InputFile(".\\src/resources/document/" + fileName));
-        sendDocument.setCaption(fileName);
-        sendDocument.getFile();
+        sendDocument.setDocument(new InputFile(inputStream, ".\\src/resources/document/" + fileName));
         try {
             execute(sendDocument);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -122,23 +130,26 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 break;
             case "individual_START":
                 company = "individual_START";
+                titleOfCompany = "СТАРТ_ИП";
                 listenDataForIndividual(chatId);
                 break;
         }
     }
 
     private void listenDataForIndividual(long chatId) {
-        setAnswer(chatId, "*Ниже необходимо заполнить данные подписуемого строго по порядку:*" +
-                "\nНаименование ИП" +
-                "\nЮр. адрес" +
-                "\nИНН" +
-                "\nОГРНИП" +
-                "\nБИК" +
-                "\nНаименование банка" +
-                "\nРасчетный счет" +
-                "\nКорресподентский счет" +
-                "\nТелефон для связи" +
-                "\nПочта");
+        setAnswer(chatId, EmojiParser.parseToUnicode(EXCLAMATION_EMOJI) + """
+                 *Ниже необходимо заполнить данные подписуемого строго по порядку:*
+                
+                Наименование ИП
+                Юр. адрес
+                ИНН
+                ОГРНИП
+                БИК
+                Наименование банка
+                Расчетный счет
+                Корресподентский счет
+                Телефон для связи
+                Почта""");
         isState = true;
     }
 
@@ -154,7 +165,7 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         individual.setBank(lines[5].trim());
         individual.setRs(lines[6].trim());
         individual.setKs(lines[7].trim());
-        individual.setTelephone(Long.valueOf(lines[8].trim()));
+        individual.setTelephone(lines[8].trim());
         individual.setMail(lines[9].trim());
         log.info("Подписуемый {} успешно сформирован!", individual);
         return individual;
@@ -172,9 +183,9 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         InlineKeyboardMarkup keyboard;
 
         var helpButton = createInlineKeyboardButton("О приложении " + EmojiParser
-                .parseToUnicode(Emojis.INFORMATION_SOURCE_EMOJI), "info");
+                .parseToUnicode(INFORMATION_SOURCE_EMOJI), "info");
         var startButton = createInlineKeyboardButton("Создать документ " + EmojiParser
-                .parseToUnicode(Emojis.PAGE_FACING_UP_EMOJI), "create_document");
+                .parseToUnicode(PAGE_FACING_UP_EMOJI), "create_document");
 
         keyboard = InlineKeyboardMarkup.builder()
                 .keyboardRow(List.of(helpButton))
@@ -183,11 +194,11 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
 
         SendMessage message = SendMessage.builder().chatId(chatId).parseMode(ParseMode.HTML)
                 .text("Добро пожаловать, _" + firstName + "_ "
-                        + EmojiParser.parseToUnicode(Emojis.WAVE_EMOJI) + "\n\n"
-                        + "Ваш персональный мастер-документов. Создает договора по готовым шаблонам " +
+                        + EmojiParser.parseToUnicode(WAVE_EMOJI) + "\n\n"
+                        + "Ваш персональный мастер-документов. Создает договоры по готовым шаблонам " +
                         "с уникальным стилем. Эффективно, точно, быстро. Разнообразие форматов. " +
                         "Переведем документы на новый уровень.\n\n"
-                        + EmojiParser.parseToUnicode(Emojis.ZAP_EMOJI) + " Нашел ошибку или есть предложения " +
+                        + EmojiParser.parseToUnicode(ZAP_EMOJI) + " Нашел ошибку или есть предложения " +
                         "по улучшению? @hoiboui")
                 .replyMarkup(keyboard).build();
         message.enableHtml(true);

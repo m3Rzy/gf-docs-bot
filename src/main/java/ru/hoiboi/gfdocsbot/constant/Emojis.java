@@ -8,4 +8,5 @@ public class Emojis {
     public static final String BUST_IN_SILHOUETTE_EMOJI = ":bust_in_silhouette:";
     public static final String BUSTS_IN_SILHOUETTE_EMOJI = ":busts_in_silhouette:";
     public static final String BRIEFCASE_EMOJI = ":briefcase:";
+    public static final String EXCLAMATION_EMOJI = ":exclamation:";
 }
