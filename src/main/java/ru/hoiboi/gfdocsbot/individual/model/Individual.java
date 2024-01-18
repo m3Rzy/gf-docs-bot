@@ -25,6 +25,8 @@ public class Individual {
     private String rs;
     @NotNull
     private String ks;
+    @NotNull
     private String telephone;
+    @NotNull
     private String mail;
 }
