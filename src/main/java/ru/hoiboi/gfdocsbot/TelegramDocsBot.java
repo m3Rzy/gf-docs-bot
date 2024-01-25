@@ -2,6 +2,8 @@ package ru.hoiboi.gfdocsbot;
 
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,7 +27,13 @@ import java.util.List;
 import static ru.hoiboi.gfdocsbot.constant.Emojis.*;
 
 @Slf4j
+@Component
 public class TelegramDocsBot extends TelegramLongPollingBot {
+
+    @Value("${bot.name}")
+    private String botName;
+    @Value("${bot.token}")
+    private String botToken;
 
     private String company = "";
     private String titleOfCompany = "";
@@ -34,12 +42,12 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "GfDocsBot";
+        return botName;
     }
 
     @Override
     public String getBotToken() {
-        return "6537325876:AAFVi7gll6H7ZUy8pz3epXk_BdOcVu_5fNU";
+        return botToken;
     }
 
     @Override
@@ -182,13 +190,13 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
 
         InlineKeyboardMarkup keyboard;
 
-        var helpButton = createInlineKeyboardButton("О приложении " + EmojiParser
-                .parseToUnicode(INFORMATION_SOURCE_EMOJI), "info");
+//        var helpButton = createInlineKeyboardButton("О приложении " + EmojiParser
+//                .parseToUnicode(INFORMATION_SOURCE_EMOJI), "info");
         var startButton = createInlineKeyboardButton("Создать документ " + EmojiParser
                 .parseToUnicode(PAGE_FACING_UP_EMOJI), "create_document");
 
         keyboard = InlineKeyboardMarkup.builder()
-                .keyboardRow(List.of(helpButton))
+//                .keyboardRow(List.of(helpButton))
                 .keyboardRow(List.of(startButton))
                 .build();
 
