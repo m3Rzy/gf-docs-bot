@@ -161,6 +161,11 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 titleOfCompany = "ВЭБЛОГИСТИКА_ИП";
                 listenDataForIndividual(chatId);
                 break;
+            case "individual_GERAKLION":
+                company = "individual_GERAKLION";
+                titleOfCompany = "ГЕРАКЛИОН_ИП";
+                listenDataForIndividual(chatId);
+                break;
 
         }
     }

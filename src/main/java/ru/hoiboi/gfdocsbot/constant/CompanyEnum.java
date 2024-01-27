@@ -8,7 +8,7 @@ public enum CompanyEnum {
     DILIZH("ООО «ДИЛИЖАНС СТОЛИЦА»", "individual_DILIZH"),
     RADIUS("ООО «РАДИУС»", "individual_RADIUS"),
     RUSTRANS("ООО «РУСТРАНСПЕРЕВОЗКА»", "individual_RUSTRANS"),
-    GERAKLION("ООО «ГЕРАКЛИОН» (не работает)", "individual_GERAKLION"),
+    GERAKLION("ООО «ГЕРАКЛИОН»", "individual_GERAKLION"),
     VEBLOGISTIC("ООО «ВЭБ ЛОГИСТИКА»", "individual_VEBLOGISTIC");
 
     final String title;
