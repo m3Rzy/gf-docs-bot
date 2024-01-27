@@ -141,6 +141,11 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 titleOfCompany = "СТАРТ_ИП";
                 listenDataForIndividual(chatId);
                 break;
+            case "individual_VEBLOGISTIC":
+                company = "individual_VEBLOGISTIC";
+                titleOfCompany = "ВЭБЛОГИСТИКА_ИП";
+                listenDataForIndividual(chatId);
+                break;
         }
     }
 
@@ -218,9 +223,10 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
     private void selectCompanyForIndividual(long chatId) throws TelegramApiException {
         InlineKeyboardMarkup keyboard;
         var companyStartButton = createInlineKeyboardButton(CompanyEnum.START.toString(), "individual_START");
+        var companyVebButton = createInlineKeyboardButton(CompanyEnum.VEBLOGISTIC.toString(), "individual_VEBLOGISTIC");
 
         keyboard = InlineKeyboardMarkup.builder()
-                .keyboardRow(List.of(companyStartButton))
+                .keyboardRow(List.of(companyStartButton, companyVebButton))
                 .build();
 
         SendMessage message = SendMessage.builder().chatId(chatId).parseMode(ParseMode.HTML)

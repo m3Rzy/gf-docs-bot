@@ -1,7 +1,8 @@
 package ru.hoiboi.gfdocsbot.constant;
 
 public enum CompanyEnum {
-    START("ООО «СТАРТ»");
+    START("ООО «СТАРТ»"),
+    VEBLOGISTIC("ООО «ВЭБ ЛОГИСТИКА»");
 
     final String title;
     CompanyEnum(String title) {
