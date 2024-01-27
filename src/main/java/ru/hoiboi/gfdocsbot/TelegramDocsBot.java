@@ -112,7 +112,7 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                e.getMessage();
             }
         }
     }
@@ -141,11 +141,27 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 titleOfCompany = "СТАРТ_ИП";
                 listenDataForIndividual(chatId);
                 break;
+            case "individual_DILIZH":
+                company = "individual_DILIZH";
+                titleOfCompany = "ДИЛИЖАНС_СТОЛИЦА_ИП";
+                listenDataForIndividual(chatId);
+                break;
+            case "individual_RADIUS":
+                company = "individual_RADIUS";
+                titleOfCompany = "РАДИУС_ИП";
+                listenDataForIndividual(chatId);
+                break;
+            case "individual_RUSTRANS":
+                company = "individual_RUSTRANS";
+                titleOfCompany = "РУСТРАНСПЕРЕВОЗКА_ИП";
+                listenDataForIndividual(chatId);
+                break;
             case "individual_VEBLOGISTIC":
                 company = "individual_VEBLOGISTIC";
                 titleOfCompany = "ВЭБЛОГИСТИКА_ИП";
                 listenDataForIndividual(chatId);
                 break;
+
         }
     }
 
@@ -221,20 +237,22 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
     }
 
     private void selectCompanyForIndividual(long chatId) throws TelegramApiException {
-        InlineKeyboardMarkup keyboard;
-        var companyStartButton = createInlineKeyboardButton(CompanyEnum.START.toString(), "individual_START");
-        var companyVebButton = createInlineKeyboardButton(CompanyEnum.VEBLOGISTIC.toString(), "individual_VEBLOGISTIC");
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
-        keyboard = InlineKeyboardMarkup.builder()
-                .keyboardRow(List.of(companyStartButton, companyVebButton))
-                .build();
+        for (CompanyEnum e : CompanyEnum.values()) {
+            rowsInline.add(List.of(createInlineKeyboardButton(e.toString(), e.getComment())));
+        }
+
+        markupInline.setKeyboard(rowsInline);
 
         SendMessage message = SendMessage.builder().chatId(chatId).parseMode(ParseMode.HTML)
                 .text("Выберите кампанию, с которой оформляем договор: \n")
-                .replyMarkup(keyboard).build();
+                .replyMarkup(markupInline).build();
         message.enableHtml(true);
         message.enableMarkdownV2(true);
         message.enableMarkdown(true);
+        message.setReplyMarkup(markupInline);
         execute(message);
     }
 
@@ -244,10 +262,10 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         var individualButton = createInlineKeyboardButton("Договор для ИП " + EmojiParser
                 .parseToUnicode(Emojis.BRIEFCASE_EMOJI), "individual");
 
-        var selfEmployedButton = createInlineKeyboardButton("Договор для самозанятого " + EmojiParser
+        var selfEmployedButton = createInlineKeyboardButton("Договор для самозанятого (не работает) " + EmojiParser
                 .parseToUnicode(Emojis.BUST_IN_SILHOUETTE_EMOJI), "self-employed");
 
-        var companyButton = createInlineKeyboardButton("Договор для ООО " + EmojiParser
+        var companyButton = createInlineKeyboardButton("Договор для ООО (не работает) " + EmojiParser
                 .parseToUnicode(Emojis.BUSTS_IN_SILHOUETTE_EMOJI), "company");
 
         keyboard = InlineKeyboardMarkup.builder()
