@@ -6,6 +6,8 @@ import ru.hoiboi.gfdocsbot.TelegramDocsBot;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -136,6 +138,12 @@ public class IndividualDockService {
                     + "_" + LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("dd.MM.yyyy_hh.mm")) + ".docx";
 
+            if (Files.isExecutable(Path.of(".\\src/main/resources/document"))) {
+                System.out.println("Каталог уже сущесвует!");
+            } else {
+                new File(".\\src/main/resources/document").mkdirs();
+                System.out.println("Папка document успешно создана!");
+            }
 
             try (FileOutputStream fileOutputStream = new FileOutputStream(".\\src/main/resources/document/" + fileName)) {
                 document.write(fileOutputStream);
