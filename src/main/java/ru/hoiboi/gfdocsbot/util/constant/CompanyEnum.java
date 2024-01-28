@@ -1,4 +1,4 @@
-package ru.hoiboi.gfdocsbot.constant;
+package ru.hoiboi.gfdocsbot.util.constant;
 
 import lombok.Getter;
 

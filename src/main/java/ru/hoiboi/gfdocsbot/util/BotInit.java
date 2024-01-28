@@ -1,4 +1,4 @@
-package ru.hoiboi.gfdocsbot;
+package ru.hoiboi.gfdocsbot.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.hoiboi.gfdocsbot.TelegramDocsBot;
 
 @Component
 public class BotInit {

@@ -1,4 +1,4 @@
-package ru.hoiboi.gfdocsbot.constant;
+package ru.hoiboi.gfdocsbot.util.constant;
 
 public class Emojis {
     public static final String INFORMATION_SOURCE_EMOJI = ":information_source:";

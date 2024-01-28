@@ -13,8 +13,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.hoiboi.gfdocsbot.constant.CompanyEnum;
-import ru.hoiboi.gfdocsbot.constant.Emojis;
+import ru.hoiboi.gfdocsbot.util.constant.CompanyEnum;
+import ru.hoiboi.gfdocsbot.util.constant.Emojis;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 import org.apache.commons.lang3.ObjectUtils;
 import ru.hoiboi.gfdocsbot.individual.service.IndividualDockService;
@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.hoiboi.gfdocsbot.constant.Emojis.*;
+import static ru.hoiboi.gfdocsbot.util.constant.Emojis.*;
 
 @Slf4j
 @Component
