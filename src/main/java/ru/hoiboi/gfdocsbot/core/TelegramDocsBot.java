@@ -1,4 +1,4 @@
-package ru.hoiboi.gfdocsbot;
+package ru.hoiboi.gfdocsbot.core;
 
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
@@ -13,14 +13,20 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.hoiboi.gfdocsbot.employee.io.EmployeeServiceIo;
+import ru.hoiboi.gfdocsbot.employee.model.Employee;
+import ru.hoiboi.gfdocsbot.employee.model.passport.Passport;
 import ru.hoiboi.gfdocsbot.util.constant.CompanyEnum;
+import ru.hoiboi.gfdocsbot.util.constant.ConstantTitle;
 import ru.hoiboi.gfdocsbot.util.constant.Emojis;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 import org.apache.commons.lang3.ObjectUtils;
-import ru.hoiboi.gfdocsbot.individual.service.IndividualServiceImpl;
+import ru.hoiboi.gfdocsbot.individual.io.IndividualServiceIo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +43,10 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
 
     private String company = "";
     private String titleOfCompany = "";
-    private boolean isState = false;
+    private boolean isStateIndividual = false;
+    private boolean isStateEmployee = false;
     private final List<Long> users = new ArrayList<>();
+    private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Override
     public String getBotUsername() {
@@ -71,19 +79,32 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                         }
                     }
                     default -> {
-                        if (isState) {
+                        if (isStateIndividual) {
                             try {
                                 Individual individual;
                                 individual = createIndividualFromString(update.getMessage().getText());
                                 if (areAllFieldsFilled(individual)) {
-                                    IndividualServiceImpl.startService(company, individual,
+                                    IndividualServiceIo.startService(company, individual,
                                             update.getMessage().getChatId(), this, titleOfCompany);
-                                    isState = false;
+                                    isStateIndividual = false;
                                 }
                             } catch (ArrayIndexOutOfBoundsException e) {
                                 setAnswer(update.getMessage().getChatId(), "Не все поля заполнены!");
                             }
-                        } else {
+                        } else if (isStateEmployee) {
+                            try {
+                                Employee employee;
+                                employee = createEmployeeFromString(update.getMessage().getText());
+                                if (areAllFieldsFilled(employee)) {
+                                    EmployeeServiceIo.startService(company, employee,
+                                            update.getMessage().getChatId(), this, titleOfCompany);
+                                    isStateEmployee = false;
+                                }
+                            } catch (ArrayIndexOutOfBoundsException e) {
+                                setAnswer(update.getMessage().getChatId(), "Не все поля заполнены!");
+                            }
+                        }
+                        else {
                             setAnswer(update.getMessage().getChatId(), "Неизвестная команда! Начните со /start");
                         }
                     }
@@ -127,11 +148,12 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 selectMenuDocument(chatId);
                 break;
             case "individual":
-                selectCompanyForIndividual(chatId);
+                selectCompany(chatId, "individual");
                 log.info("{} нажал на кнопку individual", update.getCallbackQuery().getFrom().getUserName());
                 break;
-            case "self-employed":
-                log.info("{} нажал на кнопку self-employed", update.getCallbackQuery().getFrom().getUserName());
+            case "employee":
+                selectCompany(chatId, "employee");
+                log.info("{} нажал на кнопку employee", update.getCallbackQuery().getFrom().getUserName());
                 break;
             case "company":
                 log.info("{} нажал на кнопку company", update.getCallbackQuery().getFrom().getUserName());
@@ -166,25 +188,72 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                 titleOfCompany = "ГЕРАКЛИОН_ИП";
                 listenDataForIndividual(chatId);
                 break;
-
+            case "employee_START":
+                company = "employee_START";
+                titleOfCompany = "СТАРТ_СЗ";
+                listenDataForEmployee(chatId);
+                break;
+            case "employee_DILIZH":
+                company = "employee_DILIZH";
+                titleOfCompany = "ДИЛИЖАНС_СТОЛИЦА_СЗ";
+                listenDataForEmployee(chatId);
+                break;
+            case "employee_RADIUS":
+                company = "employee_RADIUS";
+                titleOfCompany = "РАДИУС_СЗ";
+                listenDataForEmployee(chatId);
+                break;
+            case "employee_RUSTRANS":
+                company = "employee_RUSTRANS";
+                titleOfCompany = "РУСТРАНСПЕРЕВОЗКА_СЗ";
+                listenDataForEmployee(chatId);
+                break;
+            case "employee_GERAKLION":
+                company = "employee_GERAKLION";
+                titleOfCompany = "ГЕРАКЛИОН_СЗ";
+                listenDataForEmployee(chatId);
+                break;
+            case "employee_VEBLOGISTIC":
+                company = "employee_VEBLOGISTIC";
+                titleOfCompany = "ВЭБЛОГИСТИКА_СЗ";
+                listenDataForEmployee(chatId);
+                break;
         }
     }
 
+    private void listenDataForEmployee(long chatId) {
+        setAnswer(chatId, EmojiParser.parseToUnicode(EXCLAMATION_EMOJI) + ConstantTitle.employee_answer);
+        isStateEmployee = true;
+    }
+
     private void listenDataForIndividual(long chatId) {
-        setAnswer(chatId, EmojiParser.parseToUnicode(EXCLAMATION_EMOJI) + """
-                 *Ниже необходимо заполнить данные подписуемого строго по порядку:*
-                
-                - Наименование ИП
-                - Юр. адрес
-                - ИНН
-                - ОГРНИП
-                - БИК
-                - Наименование банка
-                - Расчетный счет
-                - Корресподентский счет
-                - Телефон для связи
-                - Почта""");
-        isState = true;
+        setAnswer(chatId, EmojiParser.parseToUnicode(EXCLAMATION_EMOJI) + ConstantTitle.individual_answer);
+        isStateIndividual = true;
+    }
+
+    private Employee createEmployeeFromString(String input) {
+        String[] lines = input.split("\\n");
+        Passport passport = new Passport();
+
+        passport.setFio(lines[0].trim());
+        passport.setSerialNumber(lines[1].trim());
+        passport.setCode(lines[2].trim());
+        passport.setRegister(lines[3].trim());
+        passport.setDateOfIssue(LocalDate.parse(lines[4].trim(), DATE_FORMATTER));
+        passport.setDateOfBirth(LocalDate.parse(lines[5].trim(), DATE_FORMATTER));
+        passport.setPlaceOfBirth(lines[6].trim());
+        passport.setRegistration(lines[7].trim());
+
+        Employee employee = new Employee();
+        employee.setPassport(passport);
+        employee.setInn(lines[8].trim());
+        employee.setNumberOfPension(lines[9].trim());
+        employee.setRs(lines[10].trim());
+        employee.setBank(lines[11].trim());
+        employee.setTelephone(lines[12].trim());
+
+        log.info("Подписуемый {} успешно сформирован!", employee);
+        return employee;
     }
 
     private Individual createIndividualFromString(String input) {
@@ -241,12 +310,12 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         execute(message);
     }
 
-    private void selectCompanyForIndividual(long chatId) throws TelegramApiException {
+    private void selectCompany(long chatId, String company) throws TelegramApiException {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
         for (CompanyEnum e : CompanyEnum.values()) {
-            rowsInline.add(List.of(createInlineKeyboardButton(e.toString(), e.getComment())));
+            rowsInline.add(List.of(createInlineKeyboardButton(e.toString(), company + e.getComment())));
         }
 
         markupInline.setKeyboard(rowsInline);
@@ -267,8 +336,8 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
         var individualButton = createInlineKeyboardButton("Договор для ИП " + EmojiParser
                 .parseToUnicode(Emojis.BRIEFCASE_EMOJI), "individual");
 
-        var selfEmployedButton = createInlineKeyboardButton("Договор для самозанятого (не работает) " + EmojiParser
-                .parseToUnicode(Emojis.BUST_IN_SILHOUETTE_EMOJI), "self-employed");
+        var selfEmployedButton = createInlineKeyboardButton("Договор для самозанятого " + EmojiParser
+                .parseToUnicode(Emojis.BUST_IN_SILHOUETTE_EMOJI), "employee");
 
         var companyButton = createInlineKeyboardButton("Договор для ООО (не работает) " + EmojiParser
                 .parseToUnicode(Emojis.BUSTS_IN_SILHOUETTE_EMOJI), "company");

@@ -1,9 +1,7 @@
 package ru.hoiboi.gfdocsbot.employee.model;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.hoiboi.gfdocsbot.employee.model.passport.Passport;
 
 @AllArgsConstructor

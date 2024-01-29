@@ -1,8 +1,8 @@
-package ru.hoiboi.gfdocsbot.individual.service;
+package ru.hoiboi.gfdocsbot.individual.io;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
-import ru.hoiboi.gfdocsbot.TelegramDocsBot;
+import ru.hoiboi.gfdocsbot.core.TelegramDocsBot;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 
 import java.io.*;
@@ -13,15 +13,17 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Slf4j
-public class IndividualServiceImpl {
+import static ru.hoiboi.gfdocsbot.util.io.FileManager.*;
 
-    public static InputStream inputStream;
+@Slf4j
+public class IndividualServiceIo {
+
 
     public static void startService(String fileName, Individual individual, long chatId,
                              TelegramDocsBot telegramDocsBot, String companyTitle) {
         try {
-            try (InputStream inputStream = new FileInputStream(".\\src/main/resources/pattern/" + fileName + ".docx")) {
+            try (InputStream inputStream =
+                         new FileInputStream(".\\src/main/resources/pattern/individual/" + fileName + ".docx")) {
                 XWPFDocument document = openDocument(inputStream);
                 changeDocument(document, individual, chatId, telegramDocsBot, companyTitle);
                 log.info("Договор успешно создан и отправлен!");
@@ -31,7 +33,7 @@ public class IndividualServiceImpl {
         }
     }
 
-    public static void changeDocument(XWPFDocument document, Individual individual, long chatId,
+    private static void changeDocument(XWPFDocument document, Individual individual, long chatId,
                                 TelegramDocsBot telegramDocsBot, String company) {
         try {
             for (XWPFParagraph p : document.getParagraphs()) {
@@ -138,18 +140,19 @@ public class IndividualServiceImpl {
                     + "_" + LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("dd.MM.yyyy_hh.mm")) + ".docx";
 
-            if (Files.isExecutable(Path.of(".\\src/main/resources/document"))) {
+            if (Files.isExecutable(Path.of(".\\src/main/resources/output/individual"))) {
                 System.out.println("Каталог уже сущесвует!");
             } else {
-                new File(".\\src/main/resources/document").mkdirs();
+                new File(".\\src/main/resources/output/individual").mkdirs();
                 System.out.println("Папка document успешно создана!");
             }
 
-            try (FileOutputStream fileOutputStream = new FileOutputStream(".\\src/main/resources/document/" + fileName)) {
+            try (FileOutputStream fileOutputStream =
+                         new FileOutputStream(".\\src/main/resources/output/individual/" + fileName)) {
                 document.write(fileOutputStream);
                 document.close();
 
-                File file = new File(".\\src/main/resources/document/" + fileName);
+                File file = new File(".\\src/main/resources/output/individual/" + fileName);
                 if (!file.exists() || file.length() == 0) {
                     throw new RuntimeException("Ошибка: файл документа пуст или не существует");
                 }
@@ -161,35 +164,5 @@ public class IndividualServiceImpl {
         } catch (IOException | RuntimeException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static String convertToShortName(String fullName) {
-        StringBuilder shortNameBuilder = new StringBuilder();
-        String[] nameParts = fullName.split(" ");
-
-        shortNameBuilder.append(nameParts[0]).append(" ");
-
-        if (nameParts.length > 1) {
-            shortNameBuilder.append(nameParts[1].charAt(0)).append(". ");
-        }
-
-        if (nameParts.length > 2) {
-            shortNameBuilder.append(nameParts[2].charAt(0)).append(". ");
-        }
-
-        return shortNameBuilder.toString().trim();
-    }
-
-
-    private static String convertToSurname(String fullName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] nameParts = fullName.split(" ");
-        stringBuilder.append(nameParts[0]).append(" ");
-        return stringBuilder.toString().trim();
-    }
-
-    private static XWPFDocument openDocument(InputStream inputStream) throws Exception {
-        IndividualServiceImpl.inputStream = inputStream;
-        return new XWPFDocument(inputStream);
     }
 }

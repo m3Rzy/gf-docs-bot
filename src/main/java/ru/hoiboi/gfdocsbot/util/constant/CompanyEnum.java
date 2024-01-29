@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum CompanyEnum {
-    START("ООО «СТАРТ»", "individual_START"),
-    DILIZH("ООО «ДИЛИЖАНС СТОЛИЦА»", "individual_DILIZH"),
-    RADIUS("ООО «РАДИУС»", "individual_RADIUS"),
-    RUSTRANS("ООО «РУСТРАНСПЕРЕВОЗКА»", "individual_RUSTRANS"),
-    GERAKLION("ООО «ГЕРАКЛИОН»", "individual_GERAKLION"),
-    VEBLOGISTIC("ООО «ВЭБ ЛОГИСТИКА»", "individual_VEBLOGISTIC");
+    START("ООО «СТАРТ»", "_START"),
+    DILIZH("ООО «ДИЛИЖАНС СТОЛИЦА»", "_DILIZH"),
+    RADIUS("ООО «РАДИУС»", "_RADIUS"),
+    RUSTRANS("ООО «РУСТРАНСПЕРЕВОЗКА»", "_RUSTRANS"),
+    GERAKLION("ООО «ГЕРАКЛИОН»", "_GERAKLION"),
+    VEBLOGISTIC("ООО «ВЭБ ЛОГИСТИКА»", "_VEBLOGISTIC");
 
     final String title;
     final String comment;
