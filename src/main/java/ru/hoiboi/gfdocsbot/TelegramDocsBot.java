@@ -17,7 +17,7 @@ import ru.hoiboi.gfdocsbot.util.constant.CompanyEnum;
 import ru.hoiboi.gfdocsbot.util.constant.Emojis;
 import ru.hoiboi.gfdocsbot.individual.model.Individual;
 import org.apache.commons.lang3.ObjectUtils;
-import ru.hoiboi.gfdocsbot.individual.service.IndividualDockService;
+import ru.hoiboi.gfdocsbot.individual.service.IndividualServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +76,7 @@ public class TelegramDocsBot extends TelegramLongPollingBot {
                                 Individual individual;
                                 individual = createIndividualFromString(update.getMessage().getText());
                                 if (areAllFieldsFilled(individual)) {
-                                    IndividualDockService.startService(company, individual,
+                                    IndividualServiceImpl.startService(company, individual,
                                             update.getMessage().getChatId(), this, titleOfCompany);
                                     isState = false;
                                 }

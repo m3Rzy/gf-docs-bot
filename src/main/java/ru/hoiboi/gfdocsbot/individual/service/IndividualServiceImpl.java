@@ -14,12 +14,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
-public class IndividualDockService {
+public class IndividualServiceImpl {
 
     public static InputStream inputStream;
 
     public static void startService(String fileName, Individual individual, long chatId,
-                                    TelegramDocsBot telegramDocsBot, String companyTitle) {
+                             TelegramDocsBot telegramDocsBot, String companyTitle) {
         try {
             try (InputStream inputStream = new FileInputStream(".\\src/main/resources/pattern/" + fileName + ".docx")) {
                 XWPFDocument document = openDocument(inputStream);
@@ -31,8 +31,8 @@ public class IndividualDockService {
         }
     }
 
-    private static void changeDocument(XWPFDocument document, Individual individual, long chatId,
-                                       TelegramDocsBot telegramDocsBot, String company) {
+    public static void changeDocument(XWPFDocument document, Individual individual, long chatId,
+                                TelegramDocsBot telegramDocsBot, String company) {
         try {
             for (XWPFParagraph p : document.getParagraphs()) {
                 List<XWPFRun> runs = p.getRuns();
@@ -134,7 +134,7 @@ public class IndividualDockService {
                     }
                 }
             }
-            String fileName = company + "_" + individual.getInn()
+            String fileName = company + "_" + convertToSurname(convertToShortName(individual.getTitle()))
                     + "_" + LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("dd.MM.yyyy_hh.mm")) + ".docx";
 
@@ -180,8 +180,16 @@ public class IndividualDockService {
         return shortNameBuilder.toString().trim();
     }
 
+
+    private static String convertToSurname(String fullName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] nameParts = fullName.split(" ");
+        stringBuilder.append(nameParts[0]).append(" ");
+        return stringBuilder.toString().trim();
+    }
+
     private static XWPFDocument openDocument(InputStream inputStream) throws Exception {
-        IndividualDockService.inputStream = inputStream;
+        IndividualServiceImpl.inputStream = inputStream;
         return new XWPFDocument(inputStream);
     }
 }
